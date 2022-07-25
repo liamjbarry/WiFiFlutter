@@ -29,6 +29,17 @@ const EventChannel _eventChannel =
     const EventChannel('plugins.wififlutter.io/wifi_scan');
 
 class WiFiForIoTPlugin {
+  ///Returns a test for now
+  static Future<String?> currentSSID() async {
+    String? sResult;
+    try {
+      sResult = await _channel.invokeMethod("getSSID");
+    } on MissingPluginException catch (e) {
+      print("MissingPluginException : ${e.toString()}");
+    }
+    return sResult ?? "";
+  }
+
   /// Returns whether the WiFi AP is enabled or not
   static Future<bool> isWiFiAPEnabled() async {
     final Map<String, String> htArguments = Map();

@@ -8,7 +8,9 @@
 	<array>
 		<string>app-proxy-provider</string>
 	</array>
-	<key>com.apple.external-accessory.wireless-configuration</key>
-	<true/>
+	<key>com.apple.developer.networking.wifi-info</key>
+<true/>
+<key>com.apple.external-accessory.wireless-configuration</key>
+<true/>
 </dict>
 </plist>
