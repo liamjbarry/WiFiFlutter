@@ -5,75 +5,6 @@ import NetworkExtension
 import Foundation
 import CoreLocation
 
-/*
- See LICENSE folder for this sample’s licensing information.
- 
- Abstract:
- The LocationManager class to receive location updates for the app.
- */
-
-class LocationManager: NSObject {
-    
-    // MARK: - Public constants
-    
-    public static let shared = LocationManager()
-    
-    // MARK: - Private variables
-    
-    private var locationManger: CLLocationManager?
-    
-    // MARK: - Public CoreLocation Methods
-    
-    func startLocationManager() {
-        
-        if let locManager = locationManger {
-            // If you’re starting locationManager for the second time, such as in ConfirmNetwork, don't set accuracy and delegate again.
-            locManager.requestWhenInUseAuthorization()
-            locManager.startUpdatingLocation()
-            return
-        }
-        
-        let manager = CLLocationManager()
-        locationManger = manager
-        manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyKilometer
-        manager.requestWhenInUseAuthorization()
-        manager.startUpdatingLocation()
-    }
-    
-    func stopLocationManager() {
-        locationManger?.stopUpdatingLocation()
-    }
-    
-}
-
-// MARK: - CLLocationManagerDelegate Methods
-
-extension LocationManager: CLLocationManagerDelegate {
-    
-    // MARK: - CLLocationManagerDelegate Methods
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let lastLocation = locations.last {
-            print("<LocationManager> lastLocation:\(lastLocation.coordinate.latitude), \(lastLocation.coordinate.longitude)")
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        // Detect the CLAuthorizationStatus and enable the capture of the associated SSID.
-        if status == CLAuthorizationStatus.authorizedAlways ||
-            status == CLAuthorizationStatus.authorizedWhenInUse {
-            print("<LocationManager> authorizedAlways || authorizedWhenInUse")
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        if let error = error as? CLError, error.code == .denied {
-            print("<LocationManager> Error Denied: \(error.localizedDescription)")
-            manager.stopUpdatingLocation()
-        }
-    }
-}
 
 public class SwiftWifiIotPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -85,7 +16,7 @@ public class SwiftWifiIotPlugin: NSObject, FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch (call.method) {
             /// Stand Alone
-        case "getSSID":
+        case "getConnectedSSID":
             getCurrentSSID(result: result)
             break;
         case "loadWifiList":
@@ -182,16 +113,21 @@ public class SwiftWifiIotPlugin: NSObject, FlutterPlugin {
                 if (count == 8) {
                     timer.invalidate()
                 }
-                NEHotspotNetwork.fetchCurrent(completionHandler: { (network) in
-                    if let unwrappedNetwork = network {
-                        let networkSSID = unwrappedNetwork.ssid
-                        print("Network: \(networkSSID) and signal strength \(unwrappedNetwork.signalStrength)")
-                        timer.invalidate()
-                        networkStr = networkSSID;
-                    } else {
-                        print("No available network")
-                    }
-                })
+                NEHotspotNetwork.fetchCurrent() { (network) in
+                    let networkSSID = network.flatMap { [$0.ssid] } ?? []
+                    print("Network: \(networkSSID) connected")
+                    result(networkSSID)
+                }
+                // NEHotspotNetwork.fetchCurrent(completionHandler: { (network) in
+                //     if let unwrappedNetwork = network {
+                //         let networkSSID = unwrappedNetwork.ssid
+                //         print("Network: \(networkSSID) and signal strength \(unwrappedNetwork.signalStrength)")
+                //         timer.invalidate()
+                //         networkStr = networkSSID;
+                //     } else {
+                //         print("No available network")
+                //     }
+                // })
                 count += 1
                 print("[DEBUG] - Number: \(count)")
             }
