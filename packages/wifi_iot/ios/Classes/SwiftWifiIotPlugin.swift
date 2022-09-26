@@ -17,7 +17,8 @@ public class SwiftWifiIotPlugin: NSObject, FlutterPlugin {
         switch (call.method) {
             /// Stand Alone
         case "getConnectedSSID":
-            getCurrentSSID(result: result)
+            let ssid = getCurrentSSID()
+            print("SSID in switch \(ssid)")
             break;
         case "loadWifiList":
             loadWifiList(result: result)
@@ -105,7 +106,7 @@ public class SwiftWifiIotPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    private func getCurrentSSID(result: @escaping FlutterResult) {
+    private func getCurrentSSID() {
         var count = 0;
         var networkStr = "";
         if #available(iOS 14.0, *) {
@@ -116,7 +117,7 @@ public class SwiftWifiIotPlugin: NSObject, FlutterPlugin {
                 NEHotspotNetwork.fetchCurrent() { (network) in
                     let networkSSID = network.flatMap { [$0.ssid] } ?? []
                     print("Network: \(networkSSID) connected")
-                    result(networkSSID)
+                    return networkSSID
                 }
                 // NEHotspotNetwork.fetchCurrent(completionHandler: { (network) in
                 //     if let unwrappedNetwork = network {
